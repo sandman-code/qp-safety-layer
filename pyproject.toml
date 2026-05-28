@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qp-safety-layer"
+version = "0.1.0"
+description = "Velocity-level QP safety filter for planar pushing with UR5e in MuJoCo"
+requires-python = ">=3.10"
+dependencies = [
+    "mujoco>=3.0",
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "osqp>=0.6",
+    "gymnasium>=0.29",
+    "matplotlib>=3.8",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov",
+    "ruff",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["qp_safety*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

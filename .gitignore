@@ -1,1 +1,49 @@
-.venv
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Results and logs
+results/
+logs/
+runs/
+wandb/
+*.log
+
+# Data
+data/
+*.pkl
+*.npy
+*.npz
+*.hdf5
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# MuJoCo
+*.mjb

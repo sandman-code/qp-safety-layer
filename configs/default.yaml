@@ -1,0 +1,21 @@
+env:
+  max_episode_steps: 500
+  goal_tolerance: 0.02     # success threshold [m]
+  v_max: 0.3               # max EE speed [m/s]
+  ctrl_dt: 0.05            # control period [s] → 20 Hz
+  randomize_goal: true
+  randomize_object: true
+
+qp_filter:
+  n_dof: 2
+  v_max: 0.3
+  alpha: 5.0               # velocity constraint decay rate [1/s]
+  d_margin: 0.03           # safety margin from workspace edge [m]
+  osqp_verbose: false
+  osqp_eps_abs: 1.0e-6
+  osqp_eps_rel: 1.0e-6
+  osqp_max_iter: 4000
+
+eval:
+  n_episodes: 50
+  base_seed: 42
