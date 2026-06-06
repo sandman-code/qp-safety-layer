@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 import mujoco
+import mujoco.viewer
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
@@ -64,11 +65,17 @@ class PlanarPushEnv(gym.Env):
         self._n_substeps = max(1, round(ctrl_dt / self.model.opt.timestep))
 
         self._ee_body_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, "ee")
-        self._obj_body_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, "object")
-        self._goal_site_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SITE, "goal")
+        self._obj_body_id = mujoco.mj_name2id(
+            self.model, mujoco.mjtObj.mjOBJ_BODY, "object"
+        )
+        self._goal_site_id = mujoco.mj_name2id(
+            self.model, mujoco.mjtObj.mjOBJ_SITE, "goal"
+        )
         self._ee_mocap_id = int(self.model.body_mocapid[self._ee_body_id])
 
-        obj_jnt_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, "object_joint")
+        obj_jnt_id = mujoco.mj_name2id(
+            self.model, mujoco.mjtObj.mjOBJ_JOINT, "object_joint"
+        )
         self._obj_qpos_adr = int(self.model.jnt_qposadr[obj_jnt_id])
 
         self.observation_space = spaces.Box(
@@ -81,6 +88,7 @@ class PlanarPushEnv(gym.Env):
         self._step_count: int = 0
         self._goal_pos = np.array([0.15, 0.10], dtype=np.float64)
         self._renderer: mujoco.Renderer | None = None
+        self.viewer: mujoco.viewer.Handle | None = None
 
         # Table surface z — EE and object centers rest at this height
         self._table_z: float = 0.435
@@ -107,9 +115,9 @@ class PlanarPushEnv(gym.Env):
 
         # Set object freejoint qpos: [x, y, z,  qw, qx, qy, qz]
         adr = self._obj_qpos_adr
-        self.data.qpos[adr:adr + 3] = [obj_xy[0], obj_xy[1], self._table_z]
+        self.data.qpos[adr : adr + 3] = [obj_xy[0], obj_xy[1], self._table_z]
         self.data.qpos[adr + 3] = np.cos(obj_yaw / 2.0)
-        self.data.qpos[adr + 4:adr + 7] = [0.0, 0.0, np.sin(obj_yaw / 2.0)]
+        self.data.qpos[adr + 4 : adr + 7] = [0.0, 0.0, np.sin(obj_yaw / 2.0)]
 
         # Place EE behind the object along the -x axis
         ee_init = np.array([obj_xy[0] - 0.12, obj_xy[1], self._table_z])
@@ -162,11 +170,17 @@ class PlanarPushEnv(gym.Env):
     def render(self) -> np.ndarray | None:
         if self._renderer is None:
             self._renderer = mujoco.Renderer(self.model, height=480, width=640)
+            self.viewer = mujoco.viewer.launch_passive(self.model, self.data)
+            self.viewer.sync()
         self._renderer.update_scene(self.data, camera="overhead")
+        self.viewer.sync()
         return self._renderer.render()
 
     def close(self) -> None:
-        if self._renderer is not None:
+        if self.viewer:
+            self.viewer.close()
+
+        if self._renderer:
             self._renderer.close()
             self._renderer = None
 

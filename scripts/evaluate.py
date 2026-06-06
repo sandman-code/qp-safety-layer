@@ -23,8 +23,12 @@ from qp_safety.safety.qp_filter import QPFilterConfig, QPVelocityFilter
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Batch evaluation of controllers ± QP filter.")
-    p.add_argument("--controllers", nargs="+", choices=list(REGISTRY), default=list(REGISTRY))
+    p = argparse.ArgumentParser(
+        description="Batch evaluation of controllers ± QP filter."
+    )
+    p.add_argument(
+        "--controllers", nargs="+", choices=list(REGISTRY), default=list(REGISTRY)
+    )
     p.add_argument("--n-episodes", type=int, default=50)
     p.add_argument("--max-steps", type=int, default=500)
     p.add_argument("--v-max", type=float, default=0.3)
@@ -69,13 +73,15 @@ def evaluate_one(
             if terminated or truncated:
                 break
 
-        episodes.append({
-            "success": bool(info["success"]),
-            "dist_to_goal": float(info["dist_to_goal"]),
-            "total_reward": float(ep_reward),
-            "steps": int(step + 1),
-            "filter_rate": float(n_filtered / (step + 1)) if use_qp else 0.0,
-        })
+        episodes.append(
+            {
+                "success": bool(info["success"]),
+                "dist_to_goal": float(info["dist_to_goal"]),
+                "total_reward": float(ep_reward),
+                "steps": int(step + 1),
+                "filter_rate": float(n_filtered / (step + 1)) if use_qp else 0.0,
+            }
+        )
 
     env.close()
     return {
@@ -111,7 +117,11 @@ if __name__ == "__main__":
     for ctrl_name in args.controllers:
         all_results[ctrl_name] = {}
         for label, use_qp in [("without_qp", False), ("with_qp", True)]:
-            print(f"  evaluating {ctrl_name:12s} {'+ QP' if use_qp else '    '} ...", end=" ", flush=True)
+            print(
+                f"  evaluating {ctrl_name:12s} {'+ QP' if use_qp else '    '} ...",
+                end=" ",
+                flush=True,
+            )
             controller = REGISTRY[ctrl_name](v_max=args.v_max)
             res = evaluate_one(
                 controller=controller,

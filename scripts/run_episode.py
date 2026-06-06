@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+import mujoco
+import mujoco.viewer
 
 import numpy as np
 
@@ -22,7 +24,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--max-steps", type=int, default=500)
     p.add_argument("--v-max", type=float, default=0.3)
-    p.add_argument("--render", action="store_true", help="Render overhead view to display")
+    p.add_argument(
+        "--render", action="store_true", help="Render overhead view to display"
+    )
     return p.parse_args()
 
 

@@ -13,7 +13,9 @@ import scipy.sparse as sp
 class QPFilterConfig:
     n_dof: int = 2
     v_max: float = 0.3
-    alpha: float = 5.0      # velocity constraint decay rate [1/s]: v_toward_wall <= alpha * gap
+    alpha: float = (
+        5.0  # velocity constraint decay rate [1/s]: v_toward_wall <= alpha * gap
+    )
     d_margin: float = 0.03  # safety margin inset from workspace boundary [m]
     osqp_verbose: bool = False
     osqp_eps_abs: float = 1e-6
@@ -59,9 +61,7 @@ class QPVelocityFilter:
     # Public API
     # ------------------------------------------------------------------
 
-    def filter(
-        self, v_nom: np.ndarray, ee_pos: np.ndarray
-    ) -> tuple[np.ndarray, bool]:
+    def filter(self, v_nom: np.ndarray, ee_pos: np.ndarray) -> tuple[np.ndarray, bool]:
         """
         Project v_nom to the nearest feasible safe velocity.
 
@@ -84,7 +84,11 @@ class QPVelocityFilter:
 
         if not self._setup_done:
             self._solver.setup(
-                P, q, A, l_vec, u_vec,
+                P,
+                q,
+                A,
+                l_vec,
+                u_vec,
                 warm_starting=True,
                 verbose=self.cfg.osqp_verbose,
                 eps_abs=self.cfg.osqp_eps_abs,
@@ -110,7 +114,7 @@ class QPVelocityFilter:
     def is_safe(self, v: np.ndarray, ee_pos: np.ndarray) -> bool:
         """Return True if velocity v satisfies all constraints at ee_pos."""
         A, _, u = self._build_constraints(ee_pos)
-        return bool(np.all(A @ v[:self.cfg.n_dof] <= u + 1e-6))
+        return bool(np.all(A @ v[: self.cfg.n_dof] <= u + 1e-6))
 
     # ------------------------------------------------------------------
     # Private helpers
@@ -135,19 +139,25 @@ class QPVelocityFilter:
         # Each row is a unit vector pointing TOWARD a wall.
         # Constraint n_i · v <= alpha * gap_i prevents motion into the wall.
         # When gap < d_margin → rhs = 0 → no velocity toward that wall allowed.
-        A_ws = np.array([
-            [ 1.0,  0.0],   # right wall  (+x): vx  <= alpha*(x_max - px - dm)
-            [-1.0,  0.0],   # left wall   (-x): -vx <= alpha*(px - x_min - dm)
-            [ 0.0,  1.0],   # top wall    (+y): vy  <= alpha*(y_max - py - dm)
-            [ 0.0, -1.0],   # bottom wall (-y): -vy <= alpha*(py - y_min - dm)
-        ], dtype=np.float64)
+        A_ws = np.array(
+            [
+                [1.0, 0.0],  # right wall  (+x): vx  <= alpha*(x_max - px - dm)
+                [-1.0, 0.0],  # left wall   (-x): -vx <= alpha*(px - x_min - dm)
+                [0.0, 1.0],  # top wall    (+y): vy  <= alpha*(y_max - py - dm)
+                [0.0, -1.0],  # bottom wall (-y): -vy <= alpha*(py - y_min - dm)
+            ],
+            dtype=np.float64,
+        )
 
-        b_ws = np.array([
-            alpha * max(ws["x_max"] - px - dm, 0.0),
-            alpha * max(px - ws["x_min"] - dm, 0.0),
-            alpha * max(ws["y_max"] - py - dm, 0.0),
-            alpha * max(py - ws["y_min"] - dm, 0.0),
-        ], dtype=np.float64)
+        b_ws = np.array(
+            [
+                alpha * max(ws["x_max"] - px - dm, 0.0),
+                alpha * max(px - ws["x_min"] - dm, 0.0),
+                alpha * max(ws["y_max"] - py - dm, 0.0),
+                alpha * max(py - ws["y_min"] - dm, 0.0),
+            ],
+            dtype=np.float64,
+        )
 
         A_box = np.eye(n, dtype=np.float64)
 
@@ -156,3 +166,18 @@ class QPVelocityFilter:
         u = np.hstack([b_ws, np.full(n, v_max)])
 
         return A, l, u
+
+
+if __name__ == "__main__":
+    import sys
+    import numpy as np
+    from pathlib import Path
+
+    conf = QPFilterConfig()
+    workspace = {"x_min": -0.4, "x_max": 0.4, "y_min": -0.4, "y_max": 0.4}
+    qp = QPVelocityFilter(config=conf, workspace=workspace)
+
+    v_nom = np.array([0, 0.25, 0.6])
+    ee_pos = np.array([0, 0, 0])
+    safe = qp.filter(v_nom=v_nom, ee_pos=ee_pos)
+    print(safe)
