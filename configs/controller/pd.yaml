@@ -1,4 +1,4 @@
 type: pd
 kp: 3.0
-approach_dist: 0.07    # standoff behind object [m]
-push_speed: 0.15       # constant push phase speed [m/s]
+approach_dist: 0.07 # standoff behind object [m]
+push_speed: 0.15 # constant push phase speed [m/s]

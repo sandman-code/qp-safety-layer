@@ -22,8 +22,8 @@ class PDPushController(BaseController):
 
     def __init__(
         self,
-        kp: float = 3.0,
-        approach_dist: float = 0.07,
+        kp: float = 1,
+        approach_dist: float = 0.03,
         push_speed: float = 0.15,
         v_max: float = 0.3,
     ):
@@ -36,6 +36,7 @@ class PDPushController(BaseController):
         ee_pos = obs[0:2]
         obj_pos = obs[2:4]
         goal_pos = obs[6:8]
+        print(goal_pos)
 
         to_goal = goal_pos - obj_pos
         dist_to_goal = np.linalg.norm(to_goal)

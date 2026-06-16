@@ -22,7 +22,7 @@
           material="table_mat" condim="3" friction="0.5 0.005 0.0001"/>
 
     <!-- End-effector puck — mocap-controlled kinematic body -->
-    <body name="ee" mocap="true" pos="0 0 0.435">
+    <body name="ee" mocap="true" pos="0.435 0 0.435">
       <geom name="ee_geom" type="cylinder" size="0.025 0.015"
             material="ee_mat" condim="4" friction="0.5 0.005 0.0001"/>
     </body>
